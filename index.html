@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>JetBrains Configuration Manager</title>
+
+    <link rel="stylesheet"
+          href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/themes/smoothness/jquery-ui.css"/>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap-theme.min.css">
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
+
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
+
+    <script src="ace/src-min/ace.js"></script>
+    <script src="ace/src-min/mode-xml.js"></script>
+
+    <script src="lib/index.js"></script>
+
+    <style type="text/css">
+        body, html {
+            height: 100%;
+        }
+
+        div#body-content {
+            padding-right: 10px;
+        }
+
+        div.panel {
+            float: left;
+            margin-left: 10px;
+        }
+
+        div.right-panel {
+            width: 700px;
+        }
+
+        #ace-panel {
+            width: 698px;
+            height: 400px;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        #ide-list {
+            height: 100%;
+            max-height: 500px;
+            overflow: auto;
+        }
+
+        .list-group-item img {
+            width: 30px;
+            height: 30px;
+            margin-right: 15px;
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-default">
+    <div class="container-fluid">
+        <div class="navbar-header" style="width: 100%">
+            <div class="navbar-brand">
+                JetBrains Configuration Manager
+            </div>
+            <p class="navbar-text">A better way to have consistent JetBrains IDE configurations</p>
+
+            <div id="alert" style="position: relative; float: left; width:100%; display:none;">
+                <div class="alert alert-success">
+                    <a href="javascript:void(0)" class="close">&times;</a>
+
+                    <div id="content">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div id="body-content">
+    <div class="panel panel-default" style="width: 300px;">
+        <div class="panel-heading"> Select an IDE to configure</div>
+        <div class="list-group" id="ide-list">
+            <a class="list-group-item" href="javascript:void(0);">
+                <img src="images/loader.gif"/>
+                Loading...
+            </a>
+        </div>
+    </div>
+
+    <div class="panel panel-default" style="width: 300px; display: none;">
+        <div class="panel-heading"> Select a configuration type</div>
+        <div class="list-group" id="config-list">
+            <a class="list-group-item" href="javascript:void(0);">
+                <img src="images/loader.gif"/>
+                Loading...
+            </a>
+        </div>
+    </div>
+
+
+    <div class="panel panel-default right-panel" id="editor-panel" style="display: none;">
+        <div class="panel-heading"> Edit this configuration</div>
+        <div style="display: inline-block; padding-left: 5px; padding-top: 10px;">Select a file</div>
+
+        <div class="btn-group" id="file-dropdown" style="width: 250px !important;">
+            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                Loading...
+                <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu" role="menu">
+            </ul>
+        </div>
+
+        <div id="button-panel" style="float:right; padding-right: 5px; padding-top: 5px;">
+            <div class="btn-group" role="group" aria-label="control-buttons">
+                <button type="button" class="btn btn-primary" id="btn-save">Save</button>
+                <button type="button" class="btn btn-default" id="btn-rename">Rename</button>
+                <button type="button" class="btn btn-default" id="btn-copy-to">Copy to...</button>
+                <button type="button" class="btn btn-danger" id="btn-reset">Reset</button>
+            </div>
+        </div>
+
+        <div id="ace-panel"></div>
+    </div>
+
+    <div class="modal fade" id="rename-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="title">Rename File</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="new-file" class="control-label">
+                            New file name <input type="text" class="form-control" id="new-file"
+                                                 style="width: 200%;font-weight: normal;"/>
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary disabled" id="accept">Rename</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal" id="close">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="reset-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Reset Confirmation</h4>
+                </div>
+                <div class="modal-body">
+                    <h4>Are you sure you want to <i>reset</i> what you have edited?</h4>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id="accept">Yes</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal" id="close">No</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="save-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Reset Confirmation</h4>
+                </div>
+                <div class="modal-body">
+                    <h4>Are you sure you want to <i>save</i> what you have edited?</h4>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id="accept">Yes</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal" id="close">No</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="copy-to-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Select Destination IDE(s)</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="list-group" id="copy-to-list">
+                        <a class="list-group-item" href="javascript:void(0);">
+                            <img src="images/loader.gif"/>
+                            Loading...
+                        </a>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary disabled" id="accept">Copy</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal" id="close">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
