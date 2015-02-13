@@ -12,9 +12,10 @@ interface.
 
 ## Install
 Simply `git clone` this repository, then:
-
+```
    npm install
    node server.js
+```
 
 ## Usage
 The interface is quite simple and is very self-explanatory. Just play around with it!
