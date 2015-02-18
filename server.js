@@ -11,11 +11,9 @@ var api = require("./lib/jbcm_api");
 
 var port = 15678;
 
-if (typeof String.prototype.startsWith != "function") {
-    String.prototype.startsWith = function (str) {
-        return this.slice(0, str.length) == str;
-    };
-}
+String.prototype.startsWith = function (str) {
+    return this.slice(0, str.length) === str;
+};
 
 http.createServer(function (request, response) {
     function writeResponse (statusCode, data) {
@@ -59,4 +57,6 @@ http.createServer(function (request, response) {
 open("http://localhost:" + port, function (err) {
     if (err)
         console.error(err);
+
+    console.log('called');
 });
